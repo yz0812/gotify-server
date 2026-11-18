@@ -6,6 +6,7 @@ import * as config from '../config';
 import {SnackReporter} from '../snack/SnackManager';
 import {IApplication} from '../types';
 import {arrayMove} from '@dnd-kit/sortable';
+import {t} from '../i18n';
 
 export class AppStore extends BaseStore<IApplication> {
     public onDelete: () => void = () => {};
@@ -22,7 +23,7 @@ export class AppStore extends BaseStore<IApplication> {
     protected requestDelete = (id: number): Promise<void> =>
         axios.delete(`${config.get('url')}application/${id}`).then(() => {
             this.onDelete();
-            return this.snack('Application deleted');
+            return this.snack(t('Application deleted'));
         });
 
     @action
@@ -33,7 +34,7 @@ export class AppStore extends BaseStore<IApplication> {
             headers: {'content-type': 'multipart/form-data'},
         });
         await this.refresh();
-        this.snack('Application image updated');
+        this.snack(t('Application image updated'));
     };
 
     public async regenerateToken(id: number): Promise<string> {
@@ -50,7 +51,7 @@ export class AppStore extends BaseStore<IApplication> {
         try {
             await axios.delete(`${config.get('url')}application/${id}/image`);
             await this.refresh();
-            this.snack('Application image deleted');
+            this.snack(t('Application image deleted'));
         } catch (error) {
             console.error('Error deleting application image:', error);
             throw error;
@@ -90,7 +91,7 @@ export class AppStore extends BaseStore<IApplication> {
     >): Promise<void> => {
         await axios.put(`${config.get('url')}application/${id}`, app);
         await this.refresh();
-        this.snack('Application updated');
+        this.snack(t('Application updated'));
     };
 
     @action
@@ -105,12 +106,12 @@ export class AppStore extends BaseStore<IApplication> {
             defaultPriority,
         });
         await this.refresh();
-        this.snack('Application created');
+        this.snack(t('Application created'));
         return response.data.token;
     };
 
     public getName = (id: number): string => {
         const app = this.getByIDOrUndefined(id);
-        return id === -1 ? 'All Messages' : app !== undefined ? app.name : 'unknown';
+        return id === -1 ? t('All Messages') : app !== undefined ? app.name : t('unknown');
     };
 }

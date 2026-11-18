@@ -7,6 +7,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import {NumberField} from '../common/NumberField';
+import {useTranslation} from '../i18n';
 
 interface IProps {
     fClose: (token: string | null) => void;
@@ -16,6 +17,7 @@ interface IProps {
 const AddClientDialog = ({fClose, fOnSubmit}: IProps) => {
     const [name, setName] = useState('');
     const [expiresAfter, setExpiresAfter] = useState(0);
+    const {t} = useTranslation();
     const submitEnabled = name.length !== 0;
     const submitAndNext = async () => {
         const token = await fOnSubmit(name, Math.max(0, expiresAfter));
@@ -28,13 +30,13 @@ const AddClientDialog = ({fClose, fOnSubmit}: IProps) => {
             onClose={() => fClose(null)}
             aria-labelledby="form-dialog-title"
             id="client-dialog">
-            <DialogTitle id="form-dialog-title">Create a client</DialogTitle>
+            <DialogTitle id="form-dialog-title">{t('Create a client')}</DialogTitle>
             <DialogContent>
                 <TextField
                     autoFocus
                     margin="dense"
                     className="name"
-                    label="Name *"
+                    label={t('Name *')}
                     type="email"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -43,15 +45,17 @@ const AddClientDialog = ({fClose, fOnSubmit}: IProps) => {
                 <NumberField
                     margin="dense"
                     className="expires-after"
-                    label="Expires after inactivity (seconds, 0 = never)"
+                    label={t('Expires after inactivity (seconds, 0 = never)')}
                     value={expiresAfter}
                     onChange={(value) => setExpiresAfter(value)}
                     fullWidth
                 />
             </DialogContent>
             <DialogActions>
-                <Button onClick={() => fClose(null)}>Cancel</Button>
-                <Tooltip placement={'bottom-start'} title={submitEnabled ? '' : 'name is required'}>
+                <Button onClick={() => fClose(null)}>{t('Cancel')}</Button>
+                <Tooltip
+                    placement={'bottom-start'}
+                    title={submitEnabled ? '' : t('name is required')}>
                     <div>
                         <Button
                             className="create"
@@ -59,7 +63,7 @@ const AddClientDialog = ({fClose, fOnSubmit}: IProps) => {
                             onClick={submitAndNext}
                             color="primary"
                             variant="contained">
-                            Create
+                            {t('Create')}
                         </Button>
                     </div>
                 </Tooltip>

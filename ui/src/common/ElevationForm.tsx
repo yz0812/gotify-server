@@ -7,6 +7,7 @@ import {useStores} from '../stores';
 import * as config from '../config';
 import CircularProgress from '@mui/material/CircularProgress';
 import {Box, Divider} from '@mui/material';
+import {useTranslation} from '../i18n';
 
 const ElevateDuration = 60 * 60;
 
@@ -14,6 +15,7 @@ const ElevationForm = observer(() => {
     const {elevateStore} = useStores();
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const {t} = useTranslation();
 
     const localAuthEnabled = config.get('localAuth');
     const oidcEnabled = config.get('oidc');
@@ -24,7 +26,7 @@ const ElevationForm = observer(() => {
         try {
             await elevateStore.localElevate(password, ElevateDuration);
         } catch {
-            setError('Elevation failed. Check your password.');
+            setError(t('Elevation failed. Check your password.'));
         }
     };
 
@@ -32,16 +34,18 @@ const ElevationForm = observer(() => {
         return (
             <Box sx={{textAlign: 'center', my: 2}}>
                 <CircularProgress sx={{mb: 2}} />
-                <Typography sx={{mb: 1}}>Waiting for {oidcIdpName} sign-in...</Typography>
-                <Typography variant="body2" color="textSecondary" sx={{mb: 1}}>
-                    Complete sign-in in the new tab, then close it to continue.
+                <Typography sx={{mb: 1}}>
+                    {t('Waiting for {name} sign-in...', {name: oidcIdpName})}
+                </Typography>
+                <Typography variant="body2" sx={{color: 'text.secondary', mb: 1}}>
+                    {t('Complete sign-in in the new tab, then close it to continue.')}
                 </Typography>
                 <Button
                     className="elevation-oidc-cancel"
                     variant="outlined"
                     fullWidth
                     onClick={() => elevateStore.cleanupOidcElevate()}>
-                    Cancel {oidcIdpName} Login
+                    {t('Cancel {name} Login', {name: oidcIdpName})}
                 </Button>
             </Box>
         );
@@ -49,7 +53,9 @@ const ElevationForm = observer(() => {
 
     return (
         <>
-            <Typography>This action requires re-authentication.</Typography>
+            <Typography sx={{color: 'text.secondary', mb: 1}}>
+                {t('This action requires re-authentication.')}
+            </Typography>
             {localAuthEnabled && (
                 <form
                     onSubmit={(e) => {
@@ -60,7 +66,7 @@ const ElevationForm = observer(() => {
                         autoFocus
                         margin="dense"
                         type="password"
-                        label="Password"
+                        label={t('Password')}
                         className="elevation-password"
                         value={password}
                         onChange={(e) => {
@@ -77,22 +83,23 @@ const ElevationForm = observer(() => {
                         disabled={password.length === 0}
                         color="primary"
                         variant="contained"
+                        sx={{mt: 1}}
                         fullWidth>
-                        Elevate with Password
+                        {t('Elevate with Password')}
                     </Button>
                 </form>
             )}
 
             {oidcEnabled && (
                 <>
-                    {localAuthEnabled && <Divider sx={{my: 2}}>or</Divider>}
+                    {localAuthEnabled && <Divider sx={{my: 2}}>{t('or')}</Divider>}
                     <Button
                         className="elevation-oidc"
                         variant="contained"
                         color="primary"
                         fullWidth
                         onClick={() => elevateStore.oidcElevate(ElevateDuration)}>
-                        Elevate via {oidcIdpName}
+                        {t('Elevate via {name}', {name: oidcIdpName})}
                     </Button>
                 </>
             )}

@@ -3,7 +3,7 @@ import IconButton from '@mui/material/IconButton';
 import {makeStyles} from 'tss-react/mui';
 import Typography from '@mui/material/Typography';
 import {ExpandLess, ExpandMore} from '@mui/icons-material';
-import Delete from '@mui/icons-material/Delete';
+import Delete from '@mui/icons-material/DeleteOutlined';
 import React from 'react';
 import TimeAgo from 'react-timeago';
 import Container from '../common/Container';
@@ -11,7 +11,8 @@ import {Markdown} from '../common/Markdown';
 import * as config from '../config';
 import {IMessageExtras} from '../types';
 import {contentType, RenderMode} from './extras';
-import {TimeAgoFormatter} from '../common/TimeAgoFormatter';
+import {timeAgoFormatter} from '../common/TimeAgoFormatter';
+import {useTranslation} from '../i18n';
 
 const PREVIEW_LENGTH = 500;
 
@@ -21,15 +22,21 @@ const useStyles = makeStyles()((theme: Theme) => ({
         width: '100%',
         alignItems: 'start',
         alignContent: 'center',
-        paddingBottom: 5,
+        paddingBottom: 12,
+        gap: 14,
         wordBreak: 'break-all',
     },
     headerTitle: {
         flex: 1,
+        minWidth: 0,
     },
     trash: {
-        marginTop: -15,
-        marginRight: -15,
+        marginTop: -6,
+        marginRight: -8,
+        color: theme.palette.text.secondary,
+        '&:hover': {
+            color: theme.palette.error.main,
+        },
     },
     wrapperPadding: {
         marginBottom: theme.spacing(2),
@@ -42,14 +49,26 @@ const useStyles = makeStyles()((theme: Theme) => ({
         width: '100%',
     },
     image: {
-        width: 50,
-        height: 50,
+        width: 44,
+        height: 44,
+        borderRadius: 10,
+        objectFit: 'cover',
         [theme.breakpoints.down('md')]: {
             width: 30,
             height: 30,
+            borderRadius: 8,
         },
     },
+    appName: {
+        fontSize: 12,
+        fontWeight: 500,
+        color: theme.palette.text.secondary,
+    },
     date: {
+        fontSize: 13,
+        color: theme.palette.text.secondary,
+        whiteSpace: 'nowrap',
+        paddingTop: 2,
         [theme.breakpoints.down('md')]: {
             order: 1,
             flexBasis: '100%',
@@ -57,9 +76,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
         },
     },
     imageWrapper: {
-        marginRight: 15,
-        width: 50,
-        height: 50,
+        width: 44,
+        height: 44,
+        flexShrink: 0,
     },
     plainContent: {
         whiteSpace: 'pre-wrap',
@@ -75,12 +94,17 @@ const useStyles = makeStyles()((theme: Theme) => ({
             margin: 0,
             wordBreak: 'break-word',
         },
+        lineHeight: 1.6,
         '& a': {
-            color: '#ff7f50',
+            color: theme.palette.primary.main,
+        },
+        '& code': {
+            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+            fontSize: '0.875em',
         },
         '& pre': {
             overflow: 'auto',
-            borderRadius: '0.25em',
+            borderRadius: 8,
             backgroundColor:
                 theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
             padding: theme.spacing(1),
@@ -106,9 +130,9 @@ interface IProps {
 
 const priorityColor = (priority: number) => {
     if (priority >= 4 && priority <= 7) {
-        return 'rgba(230, 126, 34, 0.7)';
+        return '#f59e0b';
     } else if (priority > 7) {
-        return '#e74c3c';
+        return '#ef4444';
     } else {
         return 'transparent';
     }
@@ -129,6 +153,7 @@ const Message = ({
     const theme = useTheme();
     const contentRef = React.useRef<HTMLDivElement | null>(null);
     const {classes} = useStyles();
+    const {t} = useTranslation();
     const [expanded, setExpanded] = React.useState(initialExpanded);
     const [isOverflowing, setOverflowing] = React.useState(false);
     const smallHeader = useMediaQuery(theme.breakpoints.down('md'));
@@ -168,9 +193,7 @@ const Message = ({
                 style={{
                     display: 'flex',
                     flexWrap: 'wrap',
-                    borderLeftColor: priorityColor(priority),
-                    borderLeftWidth: 6,
-                    borderLeftStyle: 'solid',
+                    boxShadow: `inset 4px 0 0 ${priorityColor(priority)}`,
                 }}>
                 {smallHeader ? (
                     <HeaderSmall
@@ -202,14 +225,13 @@ const Message = ({
                 </div>
                 {isOverflowing && (
                     <Button
-                        style={{marginTop: 16}}
+                        style={{marginTop: 12}}
                         onClick={togglePreviewHeight}
-                        variant="contained"
+                        variant="text"
                         color="primary"
-                        size="large"
                         fullWidth={true}
                         startIcon={expanded ? <ExpandLess /> : <ExpandMore />}>
-                        {expanded ? 'Read Less' : 'Read More'}
+                        {expanded ? t('Read Less') : t('Read More')}
                     </Button>
                 )}
             </Container>
@@ -225,6 +247,8 @@ const HeaderWide = ({
     title,
 }: Pick<IProps, 'appName' | 'image' | 'fDelete' | 'date' | 'title'>) => {
     const {classes} = useStyles();
+    // re-render on language change so the relative date is localized
+    useTranslation();
 
     return (
         <div className={classes.header}>
@@ -233,29 +257,28 @@ const HeaderWide = ({
                     <img
                         src={config.get('url') + image}
                         alt={`${appName} logo`}
-                        width="50"
-                        height="50"
+                        width="44"
+                        height="44"
                         className={classes.image}
                     />
                 ) : null}
             </div>
             <div className={classes.headerTitle}>
-                <Typography className="title" variant="h5" sx={{lineHeight: 1.2}}>
+                <Typography
+                    className="title"
+                    variant="h6"
+                    sx={{lineHeight: 1.3, fontSize: '1.1rem'}}>
                     {title}
                 </Typography>
-                <Typography variant="subtitle1" sx={{fontSize: 12, opacity: 0.7}}>
+                <Typography variant="subtitle1" className={classes.appName}>
                     {appName}
                 </Typography>
             </div>
             <Typography variant="body1" className={classes.date}>
-                <TimeAgo date={date} formatter={TimeAgoFormatter.narrow} />
+                <TimeAgo date={date} formatter={timeAgoFormatter('narrow')} />
             </Typography>
-            <IconButton
-                onClick={fDelete}
-                style={{padding: 14}}
-                className={`${classes.trash} delete`}
-                size="large">
-                <Delete />
+            <IconButton onClick={fDelete} className={`${classes.trash} delete`} size="small">
+                <Delete fontSize="small" />
             </IconButton>
         </div>
     );
@@ -268,27 +291,28 @@ const HeaderSmall = ({
     title,
 }: Pick<IProps, 'appName' | 'image' | 'fDelete' | 'date' | 'title'>) => {
     const {classes} = useStyles();
+    // re-render on language change so the relative date is localized
+    useTranslation();
 
     return (
         <div className={classes.header}>
             <div className={classes.headerTitle}>
-                <Typography className="title" variant="h5" sx={{lineHeight: 1.2}}>
+                <Typography
+                    className="title"
+                    variant="h6"
+                    sx={{lineHeight: 1.3, fontSize: '1.1rem'}}>
                     {title}
                 </Typography>
-                <Typography variant="subtitle1" sx={{fontSize: 12, opacity: 0.7}}>
+                <Typography variant="subtitle1" className={classes.appName}>
                     {appName}
                 </Typography>
                 <Typography variant="body1" className={classes.date}>
-                    <TimeAgo date={date} formatter={TimeAgoFormatter.long} />
+                    <TimeAgo date={date} formatter={timeAgoFormatter('long')} />
                 </Typography>
             </div>
             <div style={{display: 'flex', alignItems: 'end', flexDirection: 'column'}}>
-                <IconButton
-                    onClick={fDelete}
-                    style={{padding: 14}}
-                    className={`${classes.trash} delete`}
-                    size="large">
-                    <Delete />
+                <IconButton onClick={fDelete} className={`${classes.trash} delete`} size="small">
+                    <Delete fontSize="small" />
                 </IconButton>
                 <div style={{width: 30, height: 30}}>
                     {image !== null ? (

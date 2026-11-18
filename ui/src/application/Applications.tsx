@@ -1,5 +1,5 @@
 import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
-import Key from '@mui/icons-material/Key';
+import Key from '@mui/icons-material/KeyOutlined';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
@@ -8,10 +8,11 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import Delete from '@mui/icons-material/Delete';
-import Edit from '@mui/icons-material/Edit';
-import CloudUpload from '@mui/icons-material/CloudUpload';
+import Delete from '@mui/icons-material/DeleteOutlined';
+import Edit from '@mui/icons-material/EditOutlined';
+import CloudUpload from '@mui/icons-material/CloudUploadOutlined';
 import DragIndicator from '@mui/icons-material/DragIndicator';
+import Add from '@mui/icons-material/Add';
 import Button from '@mui/material/Button';
 import {
     DndContext,
@@ -36,11 +37,18 @@ import {formatDate} from '../common/TimeAgoFormatter';
 import {useStores} from '../stores';
 import {observer} from 'mobx-react-lite';
 import {makeStyles} from 'tss-react/mui';
-import {ButtonBase, Tooltip} from '@mui/material';
+import {ButtonBase, Chip, Tooltip, Typography} from '@mui/material';
 import {TokenConfirmDialog} from '../common/TokenConfirmDialog';
+import {useTranslation} from '../i18n';
 
 const useStyles = makeStyles()((theme) => ({
     imageContainer: {
+        borderRadius: 8,
+        overflow: 'hidden',
+        '& img': {
+            display: 'block',
+            objectFit: 'cover',
+        },
         '&::after': {
             content: '"×"',
             position: 'absolute',
@@ -50,11 +58,12 @@ const useStyles = makeStyles()((theme) => ({
             height: 40,
             background: theme.palette.error.main,
             color: theme.palette.getContrastText(theme.palette.error.main),
-            fontSize: 40,
+            fontSize: 32,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             opacity: 0,
+            transition: 'opacity 120ms ease',
         },
         '&:hover::after': {opacity: 1},
     },
@@ -62,6 +71,7 @@ const useStyles = makeStyles()((theme) => ({
 
 const Applications = observer(() => {
     const {appStore} = useStores();
+    const {t} = useTranslation();
     const apps = appStore.getItems();
     const [toDeleteApp, setToDeleteApp] = useState<IApplication>();
     const [toDeleteImage, setToDeleteImage] = useState<IApplication>();
@@ -104,21 +114,23 @@ const Applications = observer(() => {
 
     return (
         <DefaultPage
-            title="Applications"
+            title={t('Applications')}
+            description={t('Applications can send messages to Gotify.')}
             rightControl={
                 <Button
                     id="create-app"
                     variant="contained"
                     color="primary"
+                    startIcon={<Add />}
                     onClick={() => {
                         setCreateDialog(true);
                     }}>
-                    Create Application
+                    {t('Create Application')}
                 </Button>
             }
-            maxWidth={1000}>
+            maxWidth={1100}>
             <Grid size={12}>
-                <Paper elevation={6} style={{overflowX: 'auto'}}>
+                <Paper elevation={1} style={{overflowX: 'auto'}}>
                     <DndContext
                         sensors={sensors}
                         collisionDetection={closestCenter}
@@ -128,11 +140,12 @@ const Applications = observer(() => {
                                 <TableRow>
                                     <TableCell padding="none" style={{width: 0}} />
                                     <TableCell padding="checkbox" style={{width: 80}} />
-                                    <TableCell>Name</TableCell>
-                                    <TableCell>Description</TableCell>
-                                    <TableCell>Priority</TableCell>
-                                    <TableCell>Last Used</TableCell>
-                                    <TableCell>Created</TableCell>
+                                    <TableCell>{t('Name')}</TableCell>
+                                    <TableCell>{t('Description')}</TableCell>
+                                    <TableCell>{t('Priority')}</TableCell>
+                                    <TableCell>{t('Last Used')}</TableCell>
+                                    <TableCell>{t('Created')}</TableCell>
+                                    <TableCell />
                                     <TableCell />
                                     <TableCell />
                                 </TableRow>
@@ -188,12 +201,10 @@ const Applications = observer(() => {
             )}
             {toRegenerateTokenApp != null && (
                 <ConfirmDialog
-                    title="Confirm Token Regeneration"
-                    text={
-                        'Regenerate token for ' +
-                        toRegenerateTokenApp.name +
-                        '? The current token will be invalidated.'
-                    }
+                    title={t('Confirm Token Regeneration')}
+                    text={t('Regenerate token for {name}? The current token will be invalidated.', {
+                        name: toRegenerateTokenApp.name,
+                    })}
                     fClose={() => setToRegenerateTokenApp(undefined)}
                     fOnSubmit={() =>
                         appStore.regenerateToken(toRegenerateTokenApp.id).then((token) => {
@@ -205,8 +216,8 @@ const Applications = observer(() => {
             )}
             {toDeleteApp != null && (
                 <ConfirmDialog
-                    title="Confirm Delete"
-                    text={'Delete ' + toDeleteApp.name + '?'}
+                    title={t('Confirm Delete')}
+                    text={t('Delete {name}?', {name: toDeleteApp.name})}
                     fClose={() => setToDeleteApp(undefined)}
                     fOnSubmit={() => appStore.remove(toDeleteApp.id)}
                     requireElevated
@@ -214,8 +225,8 @@ const Applications = observer(() => {
             )}
             {toDeleteImage != null && (
                 <ConfirmDialog
-                    title="Confirm Delete Image"
-                    text={'Delete image for ' + toDeleteImage.name + '?'}
+                    title={t('Confirm Delete Image')}
+                    text={t('Delete image for {name}?', {name: toDeleteImage.name})}
                     fClose={() => setToDeleteImage(undefined)}
                     fOnSubmit={() => appStore.deleteImage(toDeleteImage.id)}
                 />
@@ -234,7 +245,8 @@ interface IRowProps {
 }
 
 const Row = ({app, fRegenerateToken, fDelete, fUpload, fDeleteImage, fEdit}: IRowProps) => {
-    const {classes} = useStyles();
+    const {classes, theme} = useStyles();
+    const {t} = useTranslation();
     const isDefaultImage = app.image === 'static/defaultapp.png';
 
     const {attributes, listeners, setNodeRef, transform, transition, isDragging} = useSortable({
@@ -244,28 +256,31 @@ const Row = ({app, fRegenerateToken, fDelete, fUpload, fDeleteImage, fEdit}: IRo
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
-        opacity: isDragging ? 0.5 : 1,
-        backgroundColor: isDragging ? '#f5f5f5' : 'transparent',
+        opacity: isDragging ? 0.6 : 1,
+        backgroundColor: isDragging ? theme.palette.action.hover : 'transparent',
     };
 
     return (
-        <TableRow ref={setNodeRef} style={style}>
-            <TableCell padding="none" style={{paddingLeft: 5}}>
-                <div
-                    {...attributes}
-                    {...listeners}
-                    style={{
-                        cursor: 'grab',
-                        display: 'flex',
-                        alignItems: 'center',
-                        touchAction: 'none',
-                    }}>
-                    <DragIndicator style={{color: '#999'}} />
-                </div>
+        <TableRow ref={setNodeRef} style={style} hover>
+            <TableCell padding="none" style={{paddingLeft: 8}}>
+                <Tooltip title={t('Drag to reorder')} placement="left">
+                    <div
+                        {...attributes}
+                        {...listeners}
+                        style={{
+                            cursor: 'grab',
+                            display: 'flex',
+                            alignItems: 'center',
+                            touchAction: 'none',
+                            color: theme.palette.text.disabled,
+                        }}>
+                        <DragIndicator fontSize="small" />
+                    </div>
+                </Tooltip>
             </TableCell>
             <TableCell padding="normal">
-                <div style={{display: 'flex'}}>
-                    <Tooltip title="Delete image" placement="top" arrow>
+                <div style={{display: 'flex', alignItems: 'center', gap: 4}}>
+                    <Tooltip title={isDefaultImage ? '' : t('Delete image')} placement="top" arrow>
                         <ButtonBase
                             className={classes.imageContainer}
                             onClick={fDeleteImage}
@@ -278,32 +293,54 @@ const Row = ({app, fRegenerateToken, fDelete, fUpload, fDeleteImage, fEdit}: IRo
                             />
                         </ButtonBase>
                     </Tooltip>
-                    <IconButton onClick={fUpload} style={{height: 40}}>
-                        <CloudUpload />
-                    </IconButton>
+                    <Tooltip title={t('Upload image')}>
+                        <IconButton onClick={fUpload} size="small">
+                            <CloudUpload fontSize="small" />
+                        </IconButton>
+                    </Tooltip>
                 </div>
             </TableCell>
-            <TableCell>{app.name}</TableCell>
-            <TableCell>{app.description}</TableCell>
-            <TableCell>{app.defaultPriority}</TableCell>
+            <TableCell>
+                <Typography variant="body2" sx={{fontWeight: 600}} component="span">
+                    {app.name}
+                </Typography>
+            </TableCell>
+            <TableCell sx={{color: 'text.secondary', maxWidth: 280}}>{app.description}</TableCell>
+            <TableCell>
+                <Chip label={app.defaultPriority} size="small" variant="outlined" />
+            </TableCell>
             <TableCell>
                 <LastUsedCell lastUsed={app.lastUsed} />
             </TableCell>
-            <TableCell title={app.createdAt}>{formatDate(app.createdAt)}</TableCell>
-            <TableCell align="right" padding="none">
-                <IconButton onClick={fRegenerateToken} className="regenerate-token">
-                    <Key />
-                </IconButton>
+            <TableCell title={app.createdAt} sx={{whiteSpace: 'nowrap'}}>
+                {formatDate(app.createdAt)}
             </TableCell>
             <TableCell align="right" padding="none">
-                <IconButton onClick={fEdit} className="edit">
-                    <Edit />
-                </IconButton>
+                <Tooltip title={t('Regenerate token')}>
+                    <IconButton onClick={fRegenerateToken} className="regenerate-token">
+                        <Key fontSize="small" />
+                    </IconButton>
+                </Tooltip>
             </TableCell>
             <TableCell align="right" padding="none">
-                <IconButton onClick={fDelete} className="delete" disabled={app.internal}>
-                    <Delete />
-                </IconButton>
+                <Tooltip title={t('Edit')}>
+                    <IconButton onClick={fEdit} className="edit">
+                        <Edit fontSize="small" />
+                    </IconButton>
+                </Tooltip>
+            </TableCell>
+            <TableCell align="right" padding="none" style={{paddingRight: 8}}>
+                <Tooltip title={app.internal ? '' : t('Delete')}>
+                    <span>
+                        <IconButton
+                            onClick={fDelete}
+                            className="delete"
+                            disabled={app.internal}
+                            color="error">
+                            <Delete fontSize="small" />
+                        </IconButton>
+                    </span>
+                </Tooltip>
             </TableCell>
         </TableRow>
     );

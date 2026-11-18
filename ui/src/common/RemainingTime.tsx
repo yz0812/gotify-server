@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import {t, useTranslation} from '../i18n';
 
 const MINUTE_MS = 60 * 1000;
 const HOUR_MS = 60 * MINUTE_MS;
@@ -11,14 +12,15 @@ const format = (until: string): string => {
     const hours = Math.floor((diffMs % DAY_MS) / HOUR_MS);
     const minutes = Math.floor((diffMs % HOUR_MS) / MINUTE_MS);
     const parts: string[] = [];
-    if (days > 0) parts.push(`${days}d`);
-    if (days > 0 || hours > 0) parts.push(`${hours}h`);
-    parts.push(`${minutes}m`);
+    if (days > 0) parts.push(t('{value}d', {value: days}));
+    if (days > 0 || hours > 0) parts.push(t('{value}h', {value: hours}));
+    parts.push(t('{value}m', {value: minutes}));
     return parts.join(' ');
 };
 
 export const RemainingTime: React.FC<{until: string | null | undefined}> = ({until}) => {
     const [, setTick] = useState(0);
+    useTranslation();
     useEffect(() => {
         const id = window.setInterval(() => setTick((t) => t + 1), REFRESH_MS);
         return () => window.clearInterval(id);

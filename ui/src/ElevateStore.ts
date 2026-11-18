@@ -3,6 +3,7 @@ import {action, observable, runInAction} from 'mobx';
 import * as config from './config';
 import {SnackReporter} from './snack/SnackManager';
 import {CurrentUser} from './CurrentUser';
+import {t} from './i18n';
 
 export class ElevateStore {
     @observable accessor elevated = false;
@@ -57,7 +58,7 @@ export class ElevateStore {
 
         this.oidcPopup = window.open(url, 'gotify-oidc-elevate', 'width=600,height=700');
         if (!this.oidcPopup) {
-            this.snack('Popup was blocked. Please allow popups for this site and try again.');
+            this.snack(t('Popup was blocked. Please allow popups for this site and try again.'));
             return;
         }
 
@@ -82,7 +83,7 @@ export class ElevateStore {
         }
 
         if (!this.elevated) {
-            this.snack(`${config.get('oidcIdpName')} elevation was not completed.`);
+            this.snack(t('{name} elevation was not completed.', {name: config.get('oidcIdpName')}));
         }
         this.cleanupOidcElevate();
     };

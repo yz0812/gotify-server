@@ -4,6 +4,7 @@ import {BaseStore} from '../common/BaseStore';
 import * as config from '../config';
 import {SnackReporter} from '../snack/SnackManager';
 import {IPlugin} from '../types';
+import {t} from '../i18n';
 
 export class PluginStore extends BaseStore<IPlugin> {
     public onDelete: () => void = () => {};
@@ -22,13 +23,13 @@ export class PluginStore extends BaseStore<IPlugin> {
         axios.get<IPlugin[]>(`${config.get('url')}plugin`).then((response) => response.data);
 
     protected requestDelete = (): Promise<void> => {
-        this.snack('Cannot delete plugin');
+        this.snack(t('Cannot delete plugin'));
         throw new Error('Cannot delete plugin');
     };
 
     public getName = (id: number): string => {
         const plugin = this.getByIDOrUndefined(id);
-        return id === -1 ? 'All Plugins' : plugin !== undefined ? plugin.name : 'unknown';
+        return id === -1 ? t('All Plugins') : plugin !== undefined ? plugin.name : t('unknown');
     };
 
     @action
@@ -36,14 +37,14 @@ export class PluginStore extends BaseStore<IPlugin> {
         await axios.post(`${config.get('url')}plugin/${id}/config`, newConfig, {
             headers: {'content-type': 'application/x-yaml'},
         });
-        this.snack(`Plugin config updated`);
+        this.snack(t('Plugin config updated'));
         await this.refresh();
     };
 
     @action
     public changeEnabledState = async (id: number, enabled: boolean): Promise<void> => {
         await axios.post(`${config.get('url')}plugin/${id}/${enabled ? 'enable' : 'disable'}`);
-        this.snack(`Plugin ${enabled ? 'enabled' : 'disabled'}`);
+        this.snack(enabled ? t('Plugin enabled') : t('Plugin disabled'));
         await this.refresh();
     };
 }

@@ -11,6 +11,7 @@ import InputLabel from '@mui/material/InputLabel';
 import {observer} from 'mobx-react-lite';
 import {useStores} from '../stores';
 import ElevationForm from '../common/ElevationForm';
+import {useTranslation} from '../i18n';
 
 interface IProps {
     clientName: string;
@@ -24,11 +25,12 @@ const durationOptions = [
     {label: '1 day', seconds: 24 * 60 * 60},
     {label: '30 days', seconds: 30 * 24 * 60 * 60},
     {label: '1 year', seconds: 365 * 24 * 60 * 60},
-];
+] as const;
 
 const ElevateClientDialog = observer(({clientName, clientId, fClose}: IProps) => {
     const {elevateStore, clientStore, currentUser} = useStores();
-    const [durationSeconds, setDurationSeconds] = useState(durationOptions[1].seconds);
+    const {t} = useTranslation();
+    const [durationSeconds, setDurationSeconds] = useState<number>(durationOptions[1].seconds);
 
     const needsElevation = !elevateStore.elevated;
 
@@ -47,22 +49,22 @@ const ElevateClientDialog = observer(({clientName, clientId, fClose}: IProps) =>
 
     return (
         <Dialog open={true} onClose={handleClose} className="elevate-client-dialog">
-            <DialogTitle>Elevate Client: {clientName}</DialogTitle>
+            <DialogTitle>{t('Elevate Client: {name}', {name: clientName})}</DialogTitle>
             <DialogContent>
                 {needsElevation ? (
                     <ElevationForm />
                 ) : (
                     <FormControl fullWidth style={{marginTop: 8}}>
-                        <InputLabel id="elevate-duration-label">Duration</InputLabel>
+                        <InputLabel id="elevate-duration-label">{t('Duration')}</InputLabel>
                         <Select
                             className="elevate-duration"
                             labelId="elevate-duration-label"
-                            label="Duration"
+                            label={t('Duration')}
                             value={durationSeconds}
                             onChange={(e) => setDurationSeconds(e.target.value as number)}>
                             {durationOptions.map((opt) => (
                                 <MenuItem key={opt.seconds} value={opt.seconds}>
-                                    {opt.label}
+                                    {t(opt.label)}
                                 </MenuItem>
                             ))}
                         </Select>
@@ -71,7 +73,7 @@ const ElevateClientDialog = observer(({clientName, clientId, fClose}: IProps) =>
             </DialogContent>
             <DialogActions>
                 <Button className="elevate-cancel" onClick={handleClose}>
-                    Cancel
+                    {t('Cancel')}
                 </Button>
                 {!needsElevation && (
                     <Button
@@ -80,7 +82,7 @@ const ElevateClientDialog = observer(({clientName, clientId, fClose}: IProps) =>
                         autoFocus
                         color="primary"
                         variant="contained">
-                        Elevate
+                        {t('Elevate')}
                     </Button>
                 )}
             </DialogActions>

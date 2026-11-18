@@ -4,7 +4,7 @@ import * as React from 'react';
 
 const useStyles = makeStyles()(() => ({
     paper: {
-        padding: 16,
+        padding: 20,
     },
 }));
 
@@ -15,7 +15,7 @@ interface IProps {
 const Container: React.FC<React.PropsWithChildren<IProps>> = ({children, style}) => {
     const {classes} = useStyles();
     return (
-        <Paper elevation={6} className={classes.paper} style={style}>
+        <Paper elevation={1} className={classes.paper} style={style}>
             {children}
         </Paper>
     );

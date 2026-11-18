@@ -6,8 +6,11 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import Delete from '@mui/icons-material/Delete';
-import Edit from '@mui/icons-material/Edit';
+import Tooltip from '@mui/material/Tooltip';
+import Chip from '@mui/material/Chip';
+import Delete from '@mui/icons-material/DeleteOutlined';
+import Edit from '@mui/icons-material/EditOutlined';
+import Add from '@mui/icons-material/Add';
 import React from 'react';
 import ConfirmDialog from '../common/ConfirmDialog';
 import DefaultPage from '../common/DefaultPage';
@@ -17,6 +20,7 @@ import {IUser} from '../types';
 import {useStores} from '../stores';
 import {observer} from 'mobx-react-lite';
 import {formatDate} from '../common/TimeAgoFormatter';
+import {useTranslation} from '../i18n';
 
 interface IRowProps {
     name: string;
@@ -26,49 +30,69 @@ interface IRowProps {
     fEdit: VoidFunction;
 }
 
-const UserRow: React.FC<IRowProps> = ({name, admin, createdAt, fDelete, fEdit}) => (
-    <TableRow>
-        <TableCell>{name}</TableCell>
-        <TableCell>{admin ? 'Yes' : 'No'}</TableCell>
-        <TableCell title={createdAt}>{formatDate(createdAt)}</TableCell>
-        <TableCell align="right" padding="none">
-            <IconButton onClick={fEdit} className="edit" size="large">
-                <Edit />
-            </IconButton>
-            <IconButton onClick={fDelete} className="delete" size="large">
-                <Delete />
-            </IconButton>
-        </TableCell>
-    </TableRow>
-);
+const UserRow: React.FC<IRowProps> = ({name, admin, createdAt, fDelete, fEdit}) => {
+    const {t} = useTranslation();
+    return (
+        <TableRow hover>
+            <TableCell sx={{fontWeight: 600}}>{name}</TableCell>
+            <TableCell>
+                <Chip
+                    label={admin ? t('Yes') : t('No')}
+                    size="small"
+                    color={admin ? 'primary' : 'default'}
+                    variant={admin ? 'filled' : 'outlined'}
+                />
+            </TableCell>
+            <TableCell title={createdAt} sx={{whiteSpace: 'nowrap'}}>
+                {formatDate(createdAt)}
+            </TableCell>
+            <TableCell align="right" padding="none" style={{paddingRight: 8, whiteSpace: 'nowrap'}}>
+                <Tooltip title={t('Edit')}>
+                    <IconButton onClick={fEdit} className="edit">
+                        <Edit fontSize="small" />
+                    </IconButton>
+                </Tooltip>
+                <Tooltip title={t('Delete')}>
+                    <IconButton onClick={fDelete} className="delete" color="error">
+                        <Delete fontSize="small" />
+                    </IconButton>
+                </Tooltip>
+            </TableCell>
+        </TableRow>
+    );
+};
 
 const Users = observer(() => {
     const [deleteUser, setDeleteUser] = React.useState<IUser>();
     const [editUser, setEditUser] = React.useState<IUser>();
     const [createDialog, setCreateDialog] = React.useState(false);
     const {userStore} = useStores();
+    const {t} = useTranslation();
     React.useEffect(() => void userStore.refresh(), []);
     const users = userStore.getItems();
     return (
         <DefaultPage
-            title="Users"
+            title={t('Users')}
+            description={t('Manage user accounts and administrator rights.')}
+            maxWidth={800}
             rightControl={
                 <Button
                     id="create-user"
                     variant="contained"
                     color="primary"
+                    startIcon={<Add />}
                     onClick={() => setCreateDialog(true)}>
-                    Create User
+                    {t('Create User')}
                 </Button>
             }>
             <Grid size={{xs: 12}}>
-                <Paper elevation={6} style={{overflowX: 'auto'}}>
+                <Paper elevation={1} style={{overflowX: 'auto'}}>
                     <Table id="user-table">
                         <TableHead>
                             <TableRow style={{textAlign: 'center'}}>
-                                <TableCell>Username</TableCell>
-                                <TableCell>Admin</TableCell>
-                                <TableCell>Created</TableCell>
+                                <TableCell>{t('Username')}</TableCell>
+                                <TableCell>{t('Admin')}</TableCell>
+                                <TableCell>{t('Created')}</TableCell>
                                 <TableCell />
                             </TableRow>
                         </TableHead>
@@ -101,8 +125,8 @@ const Users = observer(() => {
             )}
             {deleteUser && (
                 <ConfirmDialog
-                    title="Confirm Delete"
-                    text={'Delete ' + deleteUser.name + '?'}
+                    title={t('Confirm Delete')}
+                    text={t('Delete {name}?', {name: deleteUser.name})}
                     fClose={() => setDeleteUser(undefined)}
                     fOnSubmit={() => userStore.remove(deleteUser.id)}
                 />

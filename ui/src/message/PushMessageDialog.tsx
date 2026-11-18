@@ -8,6 +8,7 @@ import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import React, {useState} from 'react';
 import {NumberField} from '../common/NumberField';
+import {useTranslation} from '../i18n';
 
 interface IProps {
     appName: string;
@@ -20,6 +21,7 @@ export const PushMessageDialog = ({appName, defaultPriority, fClose, fOnSubmit}:
     const [title, setTitle] = useState('');
     const [message, setMessage] = useState('');
     const [priority, setPriority] = useState(defaultPriority);
+    const {t} = useTranslation();
 
     const submitEnabled = message.trim().length !== 0;
     const submitAndClose = async () => {
@@ -33,16 +35,18 @@ export const PushMessageDialog = ({appName, defaultPriority, fClose, fOnSubmit}:
             onClose={fClose}
             aria-labelledby="push-message-title"
             id="push-message-dialog">
-            <DialogTitle id="push-message-title">Push message</DialogTitle>
+            <DialogTitle id="push-message-title">{t('Push message')}</DialogTitle>
             <DialogContent>
                 <DialogContentText>
-                    Send a push message via {appName}. Leave the title empty to use the application
-                    name.
+                    {t(
+                        'Send a push message via {name}. Leave the title empty to use the application name.',
+                        {name: appName}
+                    )}
                 </DialogContentText>
                 <TextField
                     margin="dense"
                     className="title"
-                    label="Title"
+                    label={t('Title')}
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
@@ -52,7 +56,7 @@ export const PushMessageDialog = ({appName, defaultPriority, fClose, fOnSubmit}:
                     autoFocus
                     margin="dense"
                     className="message"
-                    label="Message *"
+                    label={t('Message *')}
                     type="text"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
@@ -63,15 +67,15 @@ export const PushMessageDialog = ({appName, defaultPriority, fClose, fOnSubmit}:
                 <NumberField
                     margin="dense"
                     className="priority"
-                    label="Priority"
+                    label={t('Priority')}
                     value={priority}
                     onChange={(value) => setPriority(value)}
                     fullWidth
                 />
             </DialogContent>
             <DialogActions>
-                <Button onClick={fClose}>Cancel</Button>
-                <Tooltip title={submitEnabled ? '' : 'message is required'}>
+                <Button onClick={fClose}>{t('Cancel')}</Button>
+                <Tooltip title={submitEnabled ? '' : t('message is required')}>
                     <div>
                         <Button
                             className="send"
@@ -79,7 +83,7 @@ export const PushMessageDialog = ({appName, defaultPriority, fClose, fOnSubmit}:
                             onClick={submitAndClose}
                             color="primary"
                             variant="contained">
-                            Send
+                            {t('Send')}
                         </Button>
                     </div>
                 </Tooltip>

@@ -6,6 +6,7 @@ import {createTransformer} from 'mobx-utils';
 import {SnackReporter} from '../snack/SnackManager';
 import {IApplication, IMessage, IPagedMessages} from '../types';
 import {closeSnackbar, SnackbarKey} from 'notistack';
+import {t} from '../i18n';
 
 const AllMessages = -1;
 
@@ -84,11 +85,13 @@ export class MessagesStore {
     public removeByApp = async (appId: number) => {
         if (appId === AllMessages) {
             await axios.delete(config.get('url') + 'message');
-            this.snack('Deleted all messages');
+            this.snack(t('Deleted all messages'));
             this.clearAll();
         } else {
             await axios.delete(config.get('url') + 'application/' + appId + '/message');
-            this.snack(`Deleted all messages from ${this.appStore.getByID(appId).name}`);
+            this.snack(
+                t('Deleted all messages from {name}', {name: this.appStore.getByID(appId).name})
+            );
             this.clear(AllMessages);
             this.clear(appId);
         }
@@ -149,7 +152,7 @@ export class MessagesStore {
         };
 
         await axios.post(`${config.get('url')}message`, payload);
-        this.snack(`Message sent to ${app.name}`);
+        this.snack(t('Message sent to {name}', {name: app.name}));
     };
 
     @action

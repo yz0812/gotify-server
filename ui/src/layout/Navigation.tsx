@@ -2,21 +2,28 @@ import Divider from '@mui/material/Divider';
 import Drawer, {DrawerProps} from '@mui/material/Drawer';
 import {Theme} from '@mui/material/styles';
 import React from 'react';
-import {Link} from 'react-router';
+import {Link, useLocation} from 'react-router';
 import {observer} from 'mobx-react-lite';
 import {mayAllowPermission, requestPermission} from '../snack/browserNotification';
 import {
+    Box,
     Button,
     IconButton,
     Typography,
     ListItemText,
     ListItemAvatar,
+    ListItemIcon,
     Avatar,
     ListItemButton,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import Inbox from '@mui/icons-material/InboxOutlined';
+import NotificationsActive from '@mui/icons-material/NotificationsActiveOutlined';
 import {makeStyles} from 'tss-react/mui';
 import {useStores} from '../stores';
+import {useTranslation} from '../i18n';
+
+const drawerWidth = 260;
 
 const useStyles = makeStyles()((theme: Theme) => ({
     root: {
@@ -24,15 +31,41 @@ const useStyles = makeStyles()((theme: Theme) => ({
     },
     drawerPaper: {
         position: 'relative',
-        width: 250,
+        width: drawerWidth,
         minHeight: '100%',
         height: '100vh',
+        padding: theme.spacing(0, 1.5),
     },
     // eslint-disable-next-line
     toolbar: theme.mixins.toolbar as any,
     link: {
         color: 'inherit',
         textDecoration: 'none',
+        display: 'block',
+        marginBottom: 2,
+    },
+    sectionTitle: {
+        display: 'block',
+        padding: theme.spacing(2, 1.5, 1),
+        fontSize: 11,
+        fontWeight: 600,
+        letterSpacing: '0.08em',
+        textTransform: 'uppercase',
+        color: theme.palette.text.secondary,
+    },
+    appAvatar: {
+        width: 28,
+        height: 28,
+        borderRadius: 6,
+    },
+    itemText: {
+        '& .MuiListItemText-primary': {
+            fontSize: 14,
+            fontWeight: 500,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+        },
     },
 }));
 
@@ -46,6 +79,8 @@ const Navigation = observer(({loggedIn, navOpen, setNavOpen}: IProps) => {
     const [showRequestNotification, setShowRequestNotification] =
         React.useState(mayAllowPermission);
     const {classes} = useStyles();
+    const {t} = useTranslation();
+    const {pathname} = useLocation();
     const {appStore} = useStores();
     const apps = appStore.getItems();
 
@@ -58,25 +93,25 @@ const Navigation = observer(({loggedIn, navOpen, setNavOpen}: IProps) => {
                       className={`${classes.link} item`}
                       to={'/messages/' + app.id}
                       key={app.id}>
-                      <ListItemButton>
-                          <ListItemAvatar style={{minWidth: 42}}>
+                      <ListItemButton selected={pathname === '/messages/' + app.id}>
+                          <ListItemAvatar style={{minWidth: 40}}>
                               <Avatar
-                                  style={{width: 32, height: 32}}
+                                  className={classes.appAvatar}
                                   src={app.image}
-                                  variant="square"
+                                  variant="rounded"
                               />
                           </ListItemAvatar>
-                          <ListItemText primary={app.name} />
+                          <ListItemText primary={app.name} className={classes.itemText} />
                       </ListItemButton>
                   </Link>
               ));
 
     const placeholderItems = [
         <ListItemButton disabled key={-1}>
-            <ListItemText primary="Some Server" />
+            <ListItemText primary={t('Some Server')} className={classes.itemText} />
         </ListItemButton>,
         <ListItemButton disabled key={-2}>
-            <ListItemText primary="A Raspberry PI" />
+            <ListItemText primary={t('A Raspberry PI')} className={classes.itemText} />
         </ListItemButton>,
     ];
 
@@ -87,47 +122,66 @@ const Navigation = observer(({loggedIn, navOpen, setNavOpen}: IProps) => {
             setNavOpen={setNavOpen}
             id="message-navigation">
             <div className={classes.toolbar} />
+            <Box sx={{height: 12}} />
             <Link className={classes.link} to="/" onClick={() => setNavOpen(false)}>
-                <ListItemButton disabled={!loggedIn} className="all">
-                    <ListItemText primary="All Messages" />
+                <ListItemButton disabled={!loggedIn} className="all" selected={pathname === '/'}>
+                    <ListItemIcon style={{minWidth: 40}}>
+                        <Inbox />
+                    </ListItemIcon>
+                    <ListItemText primary={t('All Messages')} className={classes.itemText} />
                 </ListItemButton>
             </Link>
-            <Divider />
-            <div>{loggedIn ? userApps : placeholderItems}</div>
-            <Divider />
-            <Typography align="center" style={{marginTop: 10}}>
-                {showRequestNotification ? (
-                    <Button
-                        onClick={() => {
-                            requestPermission();
-                            setShowRequestNotification(false);
-                        }}>
-                        Enable Notifications
-                    </Button>
-                ) : null}
+            <Typography component="span" className={classes.sectionTitle}>
+                {t('Applications')}
             </Typography>
+            <div>{loggedIn ? userApps : placeholderItems}</div>
+            {showRequestNotification ? (
+                <>
+                    <Divider sx={{my: 1.5}} />
+                    <Box sx={{px: 0.5, pb: 2}}>
+                        <Button
+                            fullWidth
+                            variant="outlined"
+                            startIcon={<NotificationsActive />}
+                            onClick={() => {
+                                requestPermission();
+                                setShowRequestNotification(false);
+                            }}>
+                            {t('Enable Notifications')}
+                        </Button>
+                    </Box>
+                </>
+            ) : null}
         </ResponsiveDrawer>
     );
 });
 
 const ResponsiveDrawer: React.FC<
     DrawerProps & {navOpen: boolean; setNavOpen: (open: boolean) => void}
-> = ({navOpen, setNavOpen, children, ...rest}) => (
-    <>
-        <Drawer
-            sx={{display: {sm: 'none', xs: 'block'}}}
-            variant="temporary"
-            open={navOpen}
-            {...rest}>
-            <IconButton onClick={() => setNavOpen(false)} size="large">
-                <CloseIcon />
-            </IconButton>
-            {children}
-        </Drawer>
-        <Drawer sx={{display: {xs: 'none', sm: 'block'}}} variant="permanent" {...rest}>
-            {children}
-        </Drawer>
-    </>
-);
+> = ({navOpen, setNavOpen, children, ...rest}) => {
+    const {t} = useTranslation();
+    return (
+        <>
+            <Drawer
+                sx={{display: {sm: 'none', xs: 'block'}}}
+                variant="temporary"
+                open={navOpen}
+                onClose={() => setNavOpen(false)}
+                {...rest}>
+                <Box sx={{display: 'flex', justifyContent: 'flex-end', pt: 1}}>
+                    <IconButton
+                        onClick={() => setNavOpen(false)}
+                        aria-label={t('Close navigation')}>
+                        <CloseIcon />
+                    </IconButton>
+                </Box>
+                {children}
+            </Drawer>
+            <Drawer sx={{display: {xs: 'none', sm: 'block'}}} variant="permanent" {...rest}>
+                {children}
+            </Drawer>
+        </>
+    );
+};
 
 export default Navigation;

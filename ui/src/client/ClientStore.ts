@@ -4,6 +4,7 @@ import * as config from '../config';
 import {action} from 'mobx';
 import {SnackReporter} from '../snack/SnackManager';
 import {IClient} from '../types';
+import {t} from '../i18n';
 
 export class ClientStore extends BaseStore<IClient> {
     public constructor(private readonly snack: SnackReporter) {
@@ -16,7 +17,7 @@ export class ClientStore extends BaseStore<IClient> {
     protected requestDelete(id: number): Promise<void> {
         return axios
             .delete(`${config.get('url')}client/${id}`)
-            .then(() => this.snack('Client deleted'));
+            .then(() => this.snack(t('Client deleted')));
     }
 
     @action
@@ -30,7 +31,7 @@ export class ClientStore extends BaseStore<IClient> {
             expiresAfterInactivitySeconds,
         });
         await this.refresh();
-        this.snack('Client updated');
+        this.snack(t('Client updated'));
     };
 
     @action
@@ -49,7 +50,7 @@ export class ClientStore extends BaseStore<IClient> {
     @action
     public create = async (name: string, expiresAfterInactivitySeconds = 0): Promise<string> => {
         const client = await this.createNoNotifcation(name, expiresAfterInactivitySeconds);
-        this.snack('Client added');
+        this.snack(t('Client added'));
         return client.token;
     };
 
@@ -58,9 +59,9 @@ export class ClientStore extends BaseStore<IClient> {
         await axios.post(`${config.get('url')}client/${id}/elevate`, {durationSeconds});
         await this.refresh();
         if (durationSeconds < 0) {
-            this.snack('Canceled client elevation');
+            this.snack(t('Canceled client elevation'));
         } else {
-            this.snack('Client elevated');
+            this.snack(t('Client elevated'));
         }
     };
 }

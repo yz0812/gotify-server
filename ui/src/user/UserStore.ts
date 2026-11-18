@@ -4,6 +4,7 @@ import * as config from '../config';
 import {action} from 'mobx';
 import {SnackReporter} from '../snack/SnackManager';
 import {IUser} from '../types';
+import {t} from '../i18n';
 
 export class UserStore extends BaseStore<IUser> {
     constructor(private readonly snack: SnackReporter) {
@@ -16,20 +17,20 @@ export class UserStore extends BaseStore<IUser> {
     protected requestDelete(id: number): Promise<void> {
         return axios
             .delete(`${config.get('url')}user/${id}`)
-            .then(() => this.snack('User deleted'));
+            .then(() => this.snack(t('User deleted')));
     }
 
     @action
     public create = async (name: string, pass: string, admin: boolean) => {
         await axios.post(`${config.get('url')}user`, {name, pass, admin});
         await this.refresh();
-        this.snack('User created');
+        this.snack(t('User created'));
     };
 
     @action
     public update = async (id: number, name: string, pass: string | null, admin: boolean) => {
         await axios.post(config.get('url') + 'user/' + id, {name, pass, admin});
         await this.refresh();
-        this.snack('User updated');
+        this.snack(t('User updated'));
     };
 }

@@ -8,6 +8,7 @@ import React from 'react';
 import {observer} from 'mobx-react-lite';
 import {useStores} from '../stores';
 import ElevationForm from './ElevationForm';
+import {useTranslation} from '../i18n';
 
 interface IProps {
     title: string;
@@ -19,6 +20,7 @@ interface IProps {
 
 const ConfirmDialog = observer(({title, text, fClose, fOnSubmit, requireElevated}: IProps) => {
     const {elevateStore} = useStores();
+    const {t} = useTranslation();
 
     const needsElevation = requireElevated && !elevateStore.elevated;
 
@@ -44,7 +46,7 @@ const ConfirmDialog = observer(({title, text, fClose, fOnSubmit, requireElevated
             </DialogContent>
             <DialogActions>
                 <Button onClick={handleClose} className="cancel">
-                    Cancel
+                    {t('Cancel')}
                 </Button>
                 {!needsElevation && (
                     <Button
@@ -53,7 +55,7 @@ const ConfirmDialog = observer(({title, text, fClose, fOnSubmit, requireElevated
                         color="primary"
                         variant="contained"
                         className="confirm">
-                        Yes
+                        {t('Yes')}
                     </Button>
                 )}
             </DialogActions>

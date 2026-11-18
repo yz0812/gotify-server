@@ -7,32 +7,37 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import Settings from '@mui/icons-material/Settings';
-import {Switch, Button} from '@mui/material';
+import Settings from '@mui/icons-material/SettingsOutlined';
+import {Switch, IconButton, Tooltip} from '@mui/material';
 import DefaultPage from '../common/DefaultPage';
 import CopyableSecret from '../common/CopyableSecret';
 import {formatDate} from '../common/TimeAgoFormatter';
 import {observer} from 'mobx-react-lite';
 import {IPlugin} from '../types';
 import {useStores} from '../stores';
+import {useTranslation} from '../i18n';
 
 const Plugins = observer(() => {
     const {pluginStore} = useStores();
+    const {t} = useTranslation();
     React.useEffect(() => void pluginStore.refresh(), []);
     const plugins = pluginStore.getItems();
     return (
-        <DefaultPage title="Plugins" maxWidth={1000}>
+        <DefaultPage
+            title={t('Plugins')}
+            description={t('Manage the plugins installed on this server.')}
+            maxWidth={1100}>
             <Grid size={{xs: 12}}>
-                <Paper elevation={6} style={{overflowX: 'auto'}}>
+                <Paper elevation={1} style={{overflowX: 'auto'}}>
                     <Table id="plugin-table">
                         <TableHead>
                             <TableRow>
-                                <TableCell>ID</TableCell>
-                                <TableCell>Enabled</TableCell>
-                                <TableCell>Name</TableCell>
-                                <TableCell>Token</TableCell>
-                                <TableCell>Created</TableCell>
-                                <TableCell>Details</TableCell>
+                                <TableCell>{t('ID')}</TableCell>
+                                <TableCell>{t('Enabled')}</TableCell>
+                                <TableCell>{t('Name')}</TableCell>
+                                <TableCell>{t('Token')}</TableCell>
+                                <TableCell>{t('Created')}</TableCell>
+                                <TableCell align="right">{t('Details')}</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -67,31 +72,38 @@ interface IRowProps {
 }
 
 const Row: React.FC<IRowProps> = observer(
-    ({name, id, token, enabled, createdAt, fToggleStatus}) => (
-        <TableRow>
-            <TableCell>{id}</TableCell>
-            <TableCell>
-                <Switch
-                    checked={enabled}
-                    onClick={fToggleStatus}
-                    className="switch"
-                    data-enabled={enabled}
-                />
-            </TableCell>
-            <TableCell>{name}</TableCell>
-            <TableCell>
-                <CopyableSecret value={token} style={{display: 'flex', alignItems: 'center'}} />
-            </TableCell>
-            <TableCell title={createdAt}>{formatDate(createdAt)}</TableCell>
-            <TableCell align="right" padding="none">
-                <Link to={'/plugins/' + id}>
-                    <Button>
-                        <Settings />
-                    </Button>
-                </Link>
-            </TableCell>
-        </TableRow>
-    )
+    ({name, id, token, enabled, createdAt, fToggleStatus}) => {
+        const {t} = useTranslation();
+        return (
+            <TableRow hover>
+                <TableCell sx={{color: 'text.secondary'}}>{id}</TableCell>
+                <TableCell>
+                    <Switch
+                        checked={enabled}
+                        onClick={fToggleStatus}
+                        className="switch"
+                        data-enabled={enabled}
+                    />
+                </TableCell>
+                <TableCell sx={{fontWeight: 600}}>{name}</TableCell>
+                <TableCell>
+                    <CopyableSecret value={token} style={{display: 'flex', alignItems: 'center'}} />
+                </TableCell>
+                <TableCell title={createdAt} sx={{whiteSpace: 'nowrap'}}>
+                    {formatDate(createdAt)}
+                </TableCell>
+                <TableCell align="right" padding="none" style={{paddingRight: 8}}>
+                    <Link to={'/plugins/' + id}>
+                        <Tooltip title={t('Details')}>
+                            <IconButton color="primary">
+                                <Settings fontSize="small" />
+                            </IconButton>
+                        </Tooltip>
+                    </Link>
+                </TableCell>
+            </TableRow>
+        );
+    }
 );
 
 export default Plugins;

@@ -1,5 +1,6 @@
 import {TextField, TextFieldProps} from '@mui/material';
 import React from 'react';
+import {useTranslation} from '../i18n';
 
 export interface NumberFieldProps {
     value: number;
@@ -13,6 +14,7 @@ export const NumberField = ({
 }: NumberFieldProps & Omit<TextFieldProps, 'value' | 'onChange'>) => {
     const [stringValue, setStringValue] = React.useState<string>(value.toString());
     const [error, setError] = React.useState('');
+    const {t} = useTranslation();
 
     return (
         <TextField
@@ -27,7 +29,7 @@ export const NumberField = ({
                     onChange(i);
                     setError('');
                 } else {
-                    setError('Invalid number');
+                    setError(t('Invalid number'));
                 }
             }}
             {...props}

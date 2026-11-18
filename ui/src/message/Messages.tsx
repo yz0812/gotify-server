@@ -13,6 +13,12 @@ import {useStores} from '../stores';
 import {Virtuoso} from 'react-virtuoso';
 import {PushMessageDialog} from './PushMessageDialog';
 import {enqueueSnackbar} from 'notistack';
+import Send from '@mui/icons-material/Send';
+import Refresh from '@mui/icons-material/Refresh';
+import DeleteSweep from '@mui/icons-material/DeleteSweepOutlined';
+import Inbox from '@mui/icons-material/InboxOutlined';
+import Box from '@mui/material/Box';
+import {useTranslation} from '../i18n';
 
 const UndoAutoHideMs = 5000;
 
@@ -24,6 +30,7 @@ const Messages = observer(() => {
     const [pushMessageOpen, setPushMessageOpen] = React.useState(false);
     const [isLoadingMore, setLoadingMore] = React.useState(false);
     const {messagesStore, appStore} = useStores();
+    const {t} = useTranslation();
     const messages = messagesStore.get(appId);
     const hasMore = messagesStore.canLoadMore(appId);
     const name = appStore.getName(appId);
@@ -33,14 +40,14 @@ const Messages = observer(() => {
 
     const deleteMessage = (message: IMessage) => {
         const key = enqueueSnackbar({
-            message: 'Message deleted',
+            message: t('Message deleted'),
             variant: 'info',
             action: () => (
                 <Button
                     color="inherit"
                     size="small"
                     onClick={() => messagesStore.cancelPendingDelete(message)}>
-                    Undo
+                    {t('Undo')}
                 </Button>
             ),
             disableWindowBlurListener: true,
@@ -85,7 +92,7 @@ const Messages = observer(() => {
             return <LoadingSpinner />;
         }
         if (hasMessages) {
-            return label("You've reached the end");
+            return label(t("You've reached the end"));
         }
         return null;
     };
@@ -101,13 +108,33 @@ const Messages = observer(() => {
             itemContent={renderMessage}
             components={{
                 Footer: messageFooter,
-                EmptyPlaceholder: () => label('No messages'),
+                EmptyPlaceholder: () => (
+                    <Box
+                        sx={{
+                            textAlign: 'center',
+                            py: 8,
+                            color: 'text.secondary',
+                            border: 1,
+                            borderColor: 'divider',
+                            borderStyle: 'dashed',
+                            borderRadius: 3,
+                        }}>
+                        <Inbox sx={{fontSize: 48, opacity: 0.5}} />
+                        <Typography variant="body2" component="div">
+                            {t('No messages')}
+                        </Typography>
+                    </Box>
+                ),
             }}
         />
     );
     const label = (text: string) => (
         <Grid size={{xs: 12}}>
-            <Typography variant="caption" component="div" gutterBottom align="center">
+            <Typography
+                variant="caption"
+                component="div"
+                sx={{py: 2, color: 'text.secondary'}}
+                align="center">
                 {text}
             </Typography>
         </Grid>
@@ -116,43 +143,44 @@ const Messages = observer(() => {
         <DefaultPage
             title={name}
             rightControl={
-                <div>
+                <Box sx={{display: 'flex', flexWrap: 'wrap', gap: 1}}>
                     {app && (
                         <Button
                             id="push-message"
                             variant="contained"
                             color="primary"
-                            onClick={() => setPushMessageOpen(true)}
-                            style={{marginRight: 5}}>
-                            Push Message
+                            startIcon={<Send />}
+                            onClick={() => setPushMessageOpen(true)}>
+                            {t('Push Message')}
                         </Button>
                     )}
                     <Button
                         id="refresh-all"
-                        variant="contained"
+                        variant="outlined"
                         color="primary"
-                        onClick={() => messagesStore.refreshByApp(appId)}
-                        style={{marginRight: 5}}>
-                        Refresh
+                        startIcon={<Refresh />}
+                        onClick={() => messagesStore.refreshByApp(appId)}>
+                        {t('Refresh')}
                     </Button>
                     <Button
                         id="delete-all"
-                        variant="contained"
+                        variant="outlined"
                         disabled={!hasMessages}
-                        color="primary"
+                        color="error"
+                        startIcon={<DeleteSweep />}
                         onClick={() => {
                             setDeleteAll(true);
                         }}>
-                        Delete All
+                        {t('Delete All')}
                     </Button>
-                </div>
+                </Box>
             }>
             {!messagesStore.loaded(appId) ? <LoadingSpinner /> : renderMessages()}
 
             {deleteAll && (
                 <ConfirmDialog
-                    title="Confirm Delete"
-                    text={'Delete all messages?'}
+                    title={t('Confirm Delete')}
+                    text={t('Delete all messages?')}
                     fClose={() => setDeleteAll(false)}
                     fOnSubmit={() => messagesStore.removeByApp(appId)}
                 />

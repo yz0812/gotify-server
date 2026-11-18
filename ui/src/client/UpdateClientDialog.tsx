@@ -8,6 +8,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import {NumberField} from '../common/NumberField';
+import {useTranslation} from '../i18n';
 
 interface IProps {
     fClose: VoidFunction;
@@ -24,6 +25,7 @@ const UpdateClientDialog = ({
 }: IProps) => {
     const [name, setName] = useState(initialName);
     const [expiresAfter, setExpiresAfter] = useState(initialExpiresAfterInactivitySeconds);
+    const {t} = useTranslation();
 
     const submitEnabled = name.length !== 0;
     const submitAndClose = async () => {
@@ -33,17 +35,18 @@ const UpdateClientDialog = ({
 
     return (
         <Dialog open={true} onClose={fClose} aria-labelledby="form-dialog-title" id="client-dialog">
-            <DialogTitle id="form-dialog-title">Update a Client</DialogTitle>
+            <DialogTitle id="form-dialog-title">{t('Update a Client')}</DialogTitle>
             <DialogContent>
                 <DialogContentText>
-                    A client manages messages, clients, applications and users (with admin
-                    permissions).
+                    {t(
+                        'A client manages messages, clients, applications and users (with admin permissions).'
+                    )}
                 </DialogContentText>
                 <TextField
                     autoFocus
                     margin="dense"
                     className="name"
-                    label="Name *"
+                    label={t('Name *')}
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -52,15 +55,15 @@ const UpdateClientDialog = ({
                 <NumberField
                     margin="dense"
                     className="expires-after"
-                    label="Expires after inactivity (seconds, 0 = never)"
+                    label={t('Expires after inactivity (seconds, 0 = never)')}
                     value={expiresAfter}
                     onChange={(value) => setExpiresAfter(value)}
                     fullWidth
                 />
             </DialogContent>
             <DialogActions>
-                <Button onClick={fClose}>Cancel</Button>
-                <Tooltip title={submitEnabled ? '' : 'name is required'}>
+                <Button onClick={fClose}>{t('Cancel')}</Button>
+                <Tooltip title={submitEnabled ? '' : t('name is required')}>
                     <div>
                         <Button
                             className="update"
@@ -68,7 +71,7 @@ const UpdateClientDialog = ({
                             onClick={submitAndClose}
                             color="primary"
                             variant="contained">
-                            Update
+                            {t('Update')}
                         </Button>
                     </div>
                 </Tooltip>

@@ -7,9 +7,11 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import Delete from '@mui/icons-material/Delete';
-import Edit from '@mui/icons-material/Edit';
-import Security from '@mui/icons-material/Security';
+import Delete from '@mui/icons-material/DeleteOutlined';
+import Edit from '@mui/icons-material/EditOutlined';
+import Security from '@mui/icons-material/SecurityOutlined';
+import Add from '@mui/icons-material/Add';
+import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import ConfirmDialog from '../common/ConfirmDialog';
@@ -24,9 +26,11 @@ import {RemainingTime} from '../common/RemainingTime';
 import {observer} from 'mobx-react-lite';
 import {useStores} from '../stores';
 import {TokenConfirmDialog} from '../common/TokenConfirmDialog';
+import {useTranslation} from '../i18n';
 
 const Clients = observer(() => {
     const {clientStore, currentUser} = useStores();
+    const {t} = useTranslation();
     const [toDeleteClient, setToDeleteClient] = useState<IClient>();
     const [toUpdateClient, setToUpdateClient] = useState<IClient>();
     const [toElevateClient, setToElevateClient] = useState<IClient>();
@@ -38,27 +42,29 @@ const Clients = observer(() => {
 
     return (
         <DefaultPage
-            title="Clients"
-            maxWidth={1000}
+            title={t('Clients')}
+            description={t('Clients can receive messages and manage Gotify.')}
+            maxWidth={1100}
             rightControl={
                 <Button
                     id="create-client"
                     variant="contained"
                     color="primary"
+                    startIcon={<Add />}
                     onClick={() => setCreateDialog(true)}>
-                    Create Client
+                    {t('Create Client')}
                 </Button>
             }>
             <Grid size={12}>
-                <Paper elevation={6} style={{overflowX: 'auto'}}>
+                <Paper elevation={1} style={{overflowX: 'auto'}}>
                     <Table id="client-table">
                         <TableHead>
                             <TableRow style={{textAlign: 'center'}}>
-                                <TableCell>Name</TableCell>
-                                <TableCell>Elevation ends</TableCell>
-                                <TableCell>Expires in</TableCell>
-                                <TableCell>Last Used</TableCell>
-                                <TableCell>Created</TableCell>
+                                <TableCell>{t('Name')}</TableCell>
+                                <TableCell align="right">{t('Elevation ends')}</TableCell>
+                                <TableCell align="right">{t('Expires in')}</TableCell>
+                                <TableCell>{t('Last Used')}</TableCell>
+                                <TableCell>{t('Created')}</TableCell>
                                 <TableCell />
                                 <TableCell />
                                 <TableCell />
@@ -109,8 +115,8 @@ const Clients = observer(() => {
             )}
             {toDeleteClient != null && (
                 <ConfirmDialog
-                    title="Confirm Delete"
-                    text={'Delete ' + toDeleteClient.name + '?'}
+                    title={t('Confirm Delete')}
+                    text={t('Delete {name}?', {name: toDeleteClient.name})}
                     fClose={() => setToDeleteClient(undefined)}
                     fOnSubmit={() => clientStore.remove(toDeleteClient.id)}
                     requireElevated
@@ -149,45 +155,67 @@ const Row = ({
     fEdit,
     fDelete,
     fElevate,
-}: IRowProps) => (
-    <TableRow selected={current} aria-current={current ? 'true' : undefined}>
-        <TableCell>
-            <span className="name">{name}</span> {current ? <i> (current)</i> : ''}
-        </TableCell>
-        <TableCell align="right" title={elevatedUntil}>
-            <RemainingTime
-                until={
-                    elevatedUntil && Date.parse(elevatedUntil) > Date.now()
-                        ? elevatedUntil
-                        : undefined
-                }
-            />
-        </TableCell>
-        <TableCell align="right" className="expires-in" title={expiresAt ?? undefined}>
-            <RemainingTime until={expiresAt} />
-        </TableCell>
-        <TableCell>
-            <LastUsedCell lastUsed={lastUsed} />
-        </TableCell>
-        <TableCell title={createdAt}>{formatDate(createdAt)}</TableCell>
-        <TableCell align="right" padding="none">
-            <Tooltip title="Elevate">
-                <IconButton onClick={fElevate} className="elevate">
-                    <Security />
-                </IconButton>
-            </Tooltip>
-        </TableCell>
-        <TableCell align="right" padding="none">
-            <IconButton onClick={fEdit} className="edit">
-                <Edit />
-            </IconButton>
-        </TableCell>
-        <TableCell align="right" padding="none">
-            <IconButton onClick={fDelete} className="delete">
-                <Delete />
-            </IconButton>
-        </TableCell>
-    </TableRow>
-);
+}: IRowProps) => {
+    const {t} = useTranslation();
+    return (
+        <TableRow hover selected={current} aria-current={current ? 'true' : undefined}>
+            <TableCell>
+                <span className="name" style={{fontWeight: 600}}>
+                    {name}
+                </span>{' '}
+                {current ? (
+                    <Chip
+                        label={t('current')}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                        sx={{ml: 1, height: 20, verticalAlign: 'middle'}}
+                    />
+                ) : (
+                    ''
+                )}
+            </TableCell>
+            <TableCell align="right" title={elevatedUntil}>
+                <RemainingTime
+                    until={
+                        elevatedUntil && Date.parse(elevatedUntil) > Date.now()
+                            ? elevatedUntil
+                            : undefined
+                    }
+                />
+            </TableCell>
+            <TableCell align="right" className="expires-in" title={expiresAt ?? undefined}>
+                <RemainingTime until={expiresAt} />
+            </TableCell>
+            <TableCell>
+                <LastUsedCell lastUsed={lastUsed} />
+            </TableCell>
+            <TableCell title={createdAt} sx={{whiteSpace: 'nowrap'}}>
+                {formatDate(createdAt)}
+            </TableCell>
+            <TableCell align="right" padding="none">
+                <Tooltip title={t('Elevate')}>
+                    <IconButton onClick={fElevate} className="elevate">
+                        <Security fontSize="small" />
+                    </IconButton>
+                </Tooltip>
+            </TableCell>
+            <TableCell align="right" padding="none">
+                <Tooltip title={t('Edit')}>
+                    <IconButton onClick={fEdit} className="edit">
+                        <Edit fontSize="small" />
+                    </IconButton>
+                </Tooltip>
+            </TableCell>
+            <TableCell align="right" padding="none" style={{paddingRight: 8}}>
+                <Tooltip title={t('Delete')}>
+                    <IconButton onClick={fDelete} className="delete" color="error">
+                        <Delete fontSize="small" />
+                    </IconButton>
+                </Tooltip>
+            </TableCell>
+        </TableRow>
+    );
+};
 
 export default Clients;

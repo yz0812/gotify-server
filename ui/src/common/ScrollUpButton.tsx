@@ -1,9 +1,11 @@
 import Fab from '@mui/material/Fab';
 import KeyboardArrowUp from '@mui/icons-material/KeyboardArrowUp';
 import React from 'react';
+import {useTranslation} from '../i18n';
 
 const ScrollUpButton = () => {
     const [state, setState] = React.useState({display: 'none', opacity: 0});
+    const {t} = useTranslation();
     React.useEffect(() => {
         const scrollHandler = () => {
             const currentScrollPos = Math.max(window.pageYOffset - 1000, 0);
@@ -20,6 +22,8 @@ const ScrollUpButton = () => {
     return (
         <Fab
             color="primary"
+            size="medium"
+            aria-label={t('Scroll to top')}
             style={{
                 position: 'fixed',
                 bottom: '30px',

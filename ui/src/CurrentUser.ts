@@ -4,6 +4,7 @@ import {detect} from 'detect-browser';
 import {SnackReporter} from './snack/SnackManager';
 import {observable, runInAction, action} from 'mobx';
 import {ICurrentUser} from './types';
+import {t} from './i18n';
 
 export class CurrentUser {
     private reconnectTimeoutId: number | null = null;
@@ -26,19 +27,22 @@ export class CurrentUser {
             .create()
             .post(config.get('url') + 'user', {name, pass})
             .then(() => {
-                this.snack('User Created. Logging in...');
+                this.snack(t('User Created. Logging in...'));
                 this.login(name, pass);
                 return true;
             })
             .catch((error: AxiosError<{error?: string; errorDescription?: string}>) => {
                 if (!error || !error.response) {
-                    this.snack('No network connection or server unavailable.');
+                    this.snack(t('No network connection or server unavailable.'));
                     return false;
                 }
                 const {data} = error.response;
 
                 this.snack(
-                    `Register failed: ${data?.error ?? 'unknown'}: ${data?.errorDescription ?? ''}`
+                    t('Register failed: {error}: {description}', {
+                        error: data?.error ?? t('unknown'),
+                        description: data?.errorDescription ?? '',
+                    })
                 );
                 return false;
             });
@@ -64,7 +68,7 @@ export class CurrentUser {
             })
             .then(
                 action((resp: AxiosResponse<ICurrentUser>) => {
-                    this.snack(`A client named '${name}' was created for your session.`);
+                    this.snack(t("A client named '{name}' was created for your session.", {name}));
                     this.user = resp.data;
                     this.loggedIn = true;
                     this.authenticating = false;
@@ -75,7 +79,7 @@ export class CurrentUser {
             .catch(
                 action(() => {
                     this.authenticating = false;
-                    return this.snack('Login failed');
+                    return this.snack(t('Login failed'));
                 })
             );
     };
@@ -98,7 +102,7 @@ export class CurrentUser {
                 action((error: AxiosError) => {
                     this.authenticating = false;
                     if (!error || !error.response) {
-                        this.connectionError('No network connection or server unavailable.');
+                        this.connectionError(t('No network connection or server unavailable.'));
                         return Promise.reject(error);
                     }
 
@@ -131,13 +135,13 @@ export class CurrentUser {
     public changePassword = (pass: string) => {
         axios
             .post(config.get('url') + 'current/user/password', {pass})
-            .then(() => this.snack('Password changed'));
+            .then(() => this.snack(t('Password changed')));
     };
 
     public tryReconnect = (quiet = false) => {
         this.tryAuthenticate().catch(() => {
             if (!quiet) {
-                this.snack('Reconnect failed');
+                this.snack(t('Reconnect failed'));
             }
         });
     };

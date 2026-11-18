@@ -1,12 +1,4 @@
-import {
-    createTheme,
-    ThemeProvider,
-    StyledEngineProvider,
-    Theme,
-    useMediaQuery,
-    Paper,
-    Box,
-} from '@mui/material';
+import {ThemeProvider, StyledEngineProvider, Theme, useMediaQuery, Paper, Box} from '@mui/material';
 import {makeStyles} from 'tss-react/mui';
 import CssBaseline from '@mui/material/CssBaseline';
 import * as React from 'react';
@@ -28,18 +20,24 @@ import {ConnectionErrorBanner} from '../common/ConnectionErrorBanner';
 import {useStores} from '../stores';
 import {SnackbarProvider} from 'notistack';
 import LoadingSpinner from '../common/LoadingSpinner';
-import {isThemeKey, ThemeKey} from './theme';
+import {createAppTheme, isThemeKey, ThemeKey} from './theme';
 import DefaultPage from '../common/DefaultPage';
+import {useTranslation} from '../i18n';
 
 const useStyles = makeStyles()((theme: Theme) => ({
     content: {
         margin: '0 auto',
         marginTop: 64,
-        padding: theme.spacing(3),
+        padding: theme.spacing(4),
         width: '100%',
+        minWidth: 0,
+        minHeight: 'calc(100vh - 64px)',
+        [theme.breakpoints.down('md')]: {
+            padding: theme.spacing(3),
+        },
         [theme.breakpoints.down('sm')]: {
             marginTop: 0,
-            padding: theme.spacing(1),
+            padding: theme.spacing(2, 1.5),
         },
     },
 }));
@@ -65,15 +63,7 @@ const Layout = observer(() => {
     });
     const prefersDark = useMediaQuery('(prefers-color-scheme: dark)');
     const paletteMode = currentTheme === 'system' ? (prefersDark ? 'dark' : 'light') : currentTheme;
-    const theme = React.useMemo(
-        () =>
-            createTheme({
-                palette: {
-                    mode: paletteMode,
-                },
-            }),
-        [paletteMode]
-    );
+    const theme = React.useMemo(() => createAppTheme(paletteMode), [paletteMode]);
     const {version} = config.get('version');
     const [navOpen, setNavOpen] = React.useState(false);
 
@@ -114,6 +104,8 @@ const Layout = observer(() => {
                                 loggedIn={loggedIn}
                                 logout={logout}
                                 setNavOpen={setNavOpen}
+                                paletteMode={paletteMode}
+                                setTheme={setTheme}
                             />
                             <div style={{display: 'flex'}}>
                                 <Navigation
@@ -196,15 +188,16 @@ const RequireAuth: React.FC<
 
 export const RequireElevation = observer(({children}: React.PropsWithChildren) => {
     const {elevateStore} = useStores();
+    const {t} = useTranslation();
 
     if (elevateStore.elevated) {
         return <>{children}</>;
     }
 
     return (
-        <DefaultPage title="Authentication Required" maxWidth={400}>
-            <Paper elevation={6}>
-                <Box sx={{padding: 2}}>
+        <DefaultPage title={t('Authentication Required')} maxWidth={420}>
+            <Paper elevation={1} sx={{width: '100%'}}>
+                <Box sx={{padding: 3}}>
                     <ElevationForm />
                 </Box>
             </Paper>

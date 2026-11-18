@@ -1,18 +1,19 @@
 import axios from 'axios';
 import {CurrentUser} from './CurrentUser';
 import {SnackReporter} from './snack/SnackManager';
+import {t} from './i18n';
 
 export const initAxios = (currentUser: CurrentUser, snack: SnackReporter) => {
     axios.interceptors.response.use(undefined, (error) => {
         if (!error.response) {
-            snack('Gotify server is not reachable, try refreshing the page.');
+            snack(t('Gotify server is not reachable, try refreshing the page.'));
             return Promise.reject(error);
         }
 
         const status = error.response.status;
 
         if (status === 401) {
-            currentUser.tryAuthenticate().then(() => snack('Could not complete request.'));
+            currentUser.tryAuthenticate().then(() => snack(t('Could not complete request.')));
         }
 
         if (status === 400 || status === 403 || status === 500) {

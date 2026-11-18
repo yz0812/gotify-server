@@ -10,12 +10,14 @@ import RegistrationDialog from './Register';
 import {useStores} from '../stores';
 import {observer} from 'mobx-react-lite';
 import {useNavigate, useSearchParams} from 'react-router';
+import {useTranslation} from '../i18n';
 
 const Login = observer(() => {
     const [username, setUsername] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [registerDialog, setRegisterDialog] = React.useState(false);
     const {currentUser} = useStores();
+    const {t} = useTranslation();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const localAuthEnabled = config.get('localAuth');
@@ -46,10 +48,10 @@ const Login = observer(() => {
             return (
                 <Button
                     id="register"
-                    variant="contained"
+                    variant="outlined"
                     color="primary"
                     onClick={() => setRegisterDialog(true)}>
-                    Register
+                    {t('Register')}
                 </Button>
             );
         else return null;
@@ -59,16 +61,28 @@ const Login = observer(() => {
         currentUser.login(username, password);
     };
     return (
-        <DefaultPage title="Login" rightControl={registerButton()} maxWidth={250}>
+        <DefaultPage
+            title={t('Login')}
+            description={t('Sign in to your Gotify server')}
+            rightControl={registerButton()}
+            maxWidth={400}>
             <Grid size={{xs: 12}} style={{textAlign: 'center'}}>
-                <Container>
+                <Container style={{padding: 28}}>
+                    <img
+                        src="static/favicon-196x196.png"
+                        alt=""
+                        width={56}
+                        height={56}
+                        style={{borderRadius: 14, marginBottom: 8}}
+                    />
                     {localAuthEnabled && (
                         <form onSubmit={(e) => e.preventDefault()} id="login-form">
                             <TextField
                                 autoFocus
                                 id="username"
                                 className="name"
-                                label="Username"
+                                label={t('Username')}
+                                fullWidth
                                 name="username"
                                 margin="dense"
                                 autoComplete="username"
@@ -79,7 +93,8 @@ const Login = observer(() => {
                                 id="password"
                                 type="password"
                                 className="password"
-                                label="Password"
+                                label={t('Password')}
+                                fullWidth
                                 name="password"
                                 margin="normal"
                                 autoComplete="current-password"
@@ -96,17 +111,20 @@ const Login = observer(() => {
                                     !!currentUser.connectionErrorMessage ||
                                     currentUser.authenticating
                                 }
-                                style={{marginTop: 15, marginBottom: 5}}
+                                style={{marginTop: 12}}
+                                fullWidth
                                 loading={currentUser.authenticating}
                                 onClick={login}>
-                                Login
+                                {t('Login')}
                             </Button>
                         </form>
                     )}
                     {oidcEnabled && (
                         <>
                             {localAuthEnabled && (
-                                <Divider style={{marginTop: 15, marginBottom: 15}}>or</Divider>
+                                <Divider style={{marginTop: 20, marginBottom: 20}}>
+                                    {t('or')}
+                                </Divider>
                             )}
                             <Button
                                 id="oidc-login"
@@ -115,8 +133,9 @@ const Login = observer(() => {
                                 variant="outlined"
                                 size="large"
                                 color="primary"
-                                style={{marginBottom: 5}}>
-                                Login with {oidcIdpName}
+                                fullWidth
+                                style={{marginTop: localAuthEnabled ? 0 : 12}}>
+                                {t('Login with {name}', {name: oidcIdpName})}
                             </Button>
                         </>
                     )}
