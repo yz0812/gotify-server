@@ -21,7 +21,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import React, {CSSProperties} from 'react';
+import React from 'react';
 import {Link, useLocation} from 'react-router';
 import {useMediaQuery} from '@mui/material';
 import {ThemeKey} from './theme';
@@ -123,7 +123,6 @@ interface IProps {
     admin: boolean;
     version: string;
     logout: VoidFunction;
-    style: CSSProperties;
     setNavOpen: (open: boolean) => void;
     paletteMode: PaletteMode;
     setTheme: (theme: ThemeKey) => void;
@@ -135,7 +134,6 @@ const Header = ({
     loggedIn,
     admin,
     logout,
-    style,
     setNavOpen,
     paletteMode,
     setTheme,
@@ -143,10 +141,7 @@ const Header = ({
     const {classes} = useStyles();
     const {t} = useTranslation();
     return (
-        <AppBar
-            sx={{position: {xs: 'sticky', sm: 'fixed'}}}
-            style={style}
-            className={classes.appBar}>
+        <AppBar position="static" className={classes.appBar}>
             <Toolbar className={classes.toolbar}>
                 <div className={classes.title}>
                     <Link to="/" className={classes.link}>

@@ -32,12 +32,9 @@ const useStyles = makeStyles()((theme: Theme) => ({
     drawerPaper: {
         position: 'relative',
         width: drawerWidth,
-        minHeight: '100%',
-        height: '100vh',
+        height: '100%',
         padding: theme.spacing(0, 1.5),
     },
-    // eslint-disable-next-line
-    toolbar: theme.mixins.toolbar as any,
     link: {
         color: 'inherit',
         textDecoration: 'none',
@@ -121,7 +118,6 @@ const Navigation = observer(({loggedIn, navOpen, setNavOpen}: IProps) => {
             navOpen={navOpen}
             setNavOpen={setNavOpen}
             id="message-navigation">
-            <div className={classes.toolbar} />
             <Box sx={{height: 12}} />
             <Link className={classes.link} to="/" onClick={() => setNavOpen(false)}>
                 <ListItemButton disabled={!loggedIn} className="all" selected={pathname === '/'}>

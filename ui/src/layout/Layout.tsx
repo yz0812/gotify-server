@@ -22,21 +22,30 @@ import {SnackbarProvider} from 'notistack';
 import LoadingSpinner from '../common/LoadingSpinner';
 import {createAppTheme, isThemeKey, ThemeKey} from './theme';
 import DefaultPage from '../common/DefaultPage';
+import {ScrollContainerContext} from '../common/ScrollContainer';
 import {useTranslation} from '../i18n';
 
 const useStyles = makeStyles()((theme: Theme) => ({
+    shell: {
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100dvh',
+        overflow: 'hidden',
+    },
+    body: {
+        display: 'flex',
+        flex: 1,
+        minHeight: 0,
+    },
     content: {
-        margin: '0 auto',
-        marginTop: 64,
-        padding: theme.spacing(4),
-        width: '100%',
+        flex: 1,
         minWidth: 0,
-        minHeight: 'calc(100vh - 64px)',
+        overflowY: 'auto',
+        padding: theme.spacing(4),
         [theme.breakpoints.down('md')]: {
             padding: theme.spacing(3),
         },
         [theme.breakpoints.down('sm')]: {
-            marginTop: 0,
             padding: theme.spacing(2, 1.5),
         },
     },
@@ -66,6 +75,7 @@ const Layout = observer(() => {
     const theme = React.useMemo(() => createAppTheme(paletteMode), [paletteMode]);
     const {version} = config.get('version');
     const [navOpen, setNavOpen] = React.useState(false);
+    const [scrollContainer, setScrollContainer] = React.useState<HTMLElement | null>(null);
 
     const setTheme = (next: ThemeKey) => {
         setCurrentTheme(next);
@@ -86,7 +96,7 @@ const Layout = observer(() => {
                 <HashRouter>
                     {/* This forces all components to fully rerender including useEffects.
                         The refreshKey is updated when store data was cleaned and pages should refetch their data. */}
-                    <div key={refreshKey}>
+                    <div key={refreshKey} className={classes.shell}>
                         {!connectionErrorMessage ? null : (
                             <ConnectionErrorBanner
                                 height={64}
@@ -94,26 +104,25 @@ const Layout = observer(() => {
                                 message={connectionErrorMessage}
                             />
                         )}
-                        <div style={{display: 'flex', flexDirection: 'column'}}>
-                            <CssBaseline />
-                            <Header
-                                admin={admin}
-                                name={name}
-                                style={{top: !connectionErrorMessage ? 0 : 64}}
-                                version={version}
+                        <CssBaseline />
+                        <Header
+                            admin={admin}
+                            name={name}
+                            version={version}
+                            loggedIn={loggedIn}
+                            logout={logout}
+                            setNavOpen={setNavOpen}
+                            paletteMode={paletteMode}
+                            setTheme={setTheme}
+                        />
+                        <div className={classes.body}>
+                            <Navigation
                                 loggedIn={loggedIn}
-                                logout={logout}
+                                navOpen={navOpen}
                                 setNavOpen={setNavOpen}
-                                paletteMode={paletteMode}
-                                setTheme={setTheme}
                             />
-                            <div style={{display: 'flex'}}>
-                                <Navigation
-                                    loggedIn={loggedIn}
-                                    navOpen={navOpen}
-                                    setNavOpen={setNavOpen}
-                                />
-                                <main className={classes.content}>
+                            <main className={classes.content} ref={setScrollContainer}>
+                                <ScrollContainerContext.Provider value={scrollContainer}>
                                     <Routes>
                                         <Route path="/login" element={<Login />} />
                                         <Route path="/" element={authed(<Messages />)} />
@@ -151,11 +160,11 @@ const Layout = observer(() => {
                                             )}
                                         />
                                     </Routes>
-                                </main>
-                            </div>
-                            <ScrollUpButton />
-                            <SnackbarProvider />
+                                </ScrollContainerContext.Provider>
+                            </main>
                         </div>
+                        <ScrollUpButton container={scrollContainer} />
+                        <SnackbarProvider />
                     </div>
                 </HashRouter>
             </ThemeProvider>

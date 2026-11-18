@@ -19,6 +19,7 @@ import DeleteSweep from '@mui/icons-material/DeleteSweepOutlined';
 import Inbox from '@mui/icons-material/InboxOutlined';
 import Box from '@mui/material/Box';
 import {useTranslation} from '../i18n';
+import {useScrollContainer} from '../common/ScrollContainer';
 
 const UndoAutoHideMs = 5000;
 
@@ -31,6 +32,7 @@ const Messages = observer(() => {
     const [isLoadingMore, setLoadingMore] = React.useState(false);
     const {messagesStore, appStore} = useStores();
     const {t} = useTranslation();
+    const scrollContainer = useScrollContainer();
     const messages = messagesStore.get(appId);
     const hasMore = messagesStore.canLoadMore(appId);
     const name = appStore.getName(appId);
@@ -101,7 +103,7 @@ const Messages = observer(() => {
         <Virtuoso
             id="messages"
             style={{width: '100%'}}
-            useWindowScroll
+            customScrollParent={scrollContainer ?? undefined}
             totalCount={messages.length}
             endReached={checkIfLoadMore}
             data={messages}
@@ -175,7 +177,11 @@ const Messages = observer(() => {
                     </Button>
                 </Box>
             }>
-            {!messagesStore.loaded(appId) ? <LoadingSpinner /> : renderMessages()}
+            {!messagesStore.loaded(appId) || !scrollContainer ? (
+                <LoadingSpinner />
+            ) : (
+                renderMessages()
+            )}
 
             {deleteAll && (
                 <ConfirmDialog
